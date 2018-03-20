@@ -56,7 +56,7 @@ for s = 1:Nsites
  % init storage
  date = zeros(Tmax,3)./0;
  prog = zeros(Tmax,5)./0;
- forc = zeros(Tmax,5)./0;
+ forc = zeros(Tmax,6)./0;
 
  % read spreadsheet for the rest of obs
  edex = 0;  % index looper
@@ -103,8 +103,8 @@ for s = 1:Nsites
   forc(dex,1) = data(:,18); % Uu
   forc(dex,2) = data(:,11); % Ta
   forc(dex,3) = data(:,21); % Rn
-  forc(dex,4) = data(:,36); % Rh
-  forc(dex,5) = data(:,15); % Pp
+  forc(dex,5) = data(:,36); % Rh
+  forc(dex,6) = data(:,15); % Pp
 
  end % year
 
@@ -114,43 +114,52 @@ for s = 1:Nsites
  assert(length(NEE)==length(find(~isnan(prog(:,3)))));
  assert(length(UU) ==length(find(~isnan(forc(:,1)))));
  assert(length(Ta) ==length(find(~isnan(forc(:,2)))));
- assert(length(Rh) ==length(find(~isnan(forc(:,3)))));
- assert(length(Lw) ==length(find(~isnan(forc(:,4)))));
- assert(length(PP) ==length(find(~isnan(forc(:,5)))));
+ assert(length(Lw) ==length(find(~isnan(forc(:,3)))));
+ assert(length(Rh) ==length(find(~isnan(forc(:,5)))));
+ assert(length(PP) ==length(find(~isnan(forc(:,6)))));
 
  % check if spreadsheet matches netcdf file
  I = find(~isnan(prog(:,1)));
  if ~(max(abs(squeeze(Qe)    - prog(I,1)))<1e-6);
-  fprintf('\n   Qe(%f,%f) ...',max(squeeze(Qe) - prog(I,1)),min(squeeze(Qe) - prog(I,1)));
+  [v,i] = max(abs(squeeze(Qe) - prog(I,1)));
+  fprintf('\n   Qe(%d,%f,%f) ...',i,Qe(i),prog(I(i),1));
   prog(I,1) = Qe;
  end
  if ~(max(abs(squeeze(Qh)    - prog(I,2)))<1e-6);
-  fprintf('\n   Qh(%f,%f) ...',max(squeeze(Qh) - prog(I,2)),min(squeeze(Qh) - prog(I,2)));
+  [v,i] = max(abs(squeeze(Qh) - prog(I,2)));
+  fprintf('\n   Qh(%d,%f,%f) ...',i,Qh(i),prog(I(i),2));
   prog(I,2) = Qh;
  end
  if ~(max(abs(squeeze(NEE)   - prog(I,3)))<1e-6);
-  fprintf('\n   NEE(%f,%f) ...',max(squeeze(NEE) - prog(I,3)),min(squeeze(NEE) - prog(I,3)));
+  [v,i] = max(abs(squeeze(NEE) - prog(I,3)));
+  fprintf('\n   NEE(%d,%f,%f) ...',NEE(i),prog(I(i),3));
   prog(I,3) = NEE;
  end
  if ~(max(abs(squeeze(UU)    - forc(I,1)))<1e-3);
-  fprintf('\n   Uu(%f,%f) ...',max(squeeze(UU) - forc(I,1)),min(squeeze(UU) - forc(I,1)));
+  [v,i] = max(abs(squeeze(UU) - forc(I,1)));
+  fprintf('\n   Uu(%d,%f,%f) ...',i,UU(i),forc(I(i),1));
   forc(I,1) = UU;
  end
- if ~(max(abs(squeeze(Ta)    - forc(I,2)-273.15))<1e-3);
-  fprintf('\n   Ta(%f,%f) ...',max(squeeze(Ta) - forc(I,2)),min(squeeze(Ta) - forc(I,2)));
+ if ~(max(abs(squeeze(Ta)    - forc(I,2) - 273.15))<1e-3);
+  [v,i] = max(abs(squeeze(Ta) - forc(I,2) + 273.15));
+  fprintf('\n   Ta(%d,%f,%f) ...',i,Ta(i),forc(I(i),2));
   forc(I,2) = Ta;
  end
  if ~(max(abs(squeeze(Lw+Sw) - forc(I,3)))<1e-6);
-  fprintf('\n   Rn(%f,%f) ...',max(squeeze(Lw+Sw) - forc(I,3)),min(squeeze(Lw+Sw) - forc(I,3)));
-  forc(I,3) = Lw+Sw;
+  [v,i] = max(abs(squeeze(Lw+Sw) - forc(I,4)));
+  fprintf('\n   Rn(%d,%f,%f) ...',i,Lw(i)+Sw(i),forc(I(i),4));
+  forc(I,3) = Lw;
+  forc(I,4) = Sw;
  end
- if ~(max(abs(squeeze(Rh)    - forc(I,4)))<1e-6);
-  fprintf('\n   Rh(%f,%f) ...',max(squeeze(Rh) - forc(I,4)),min(squeeze(Rh) - forc(I,4)));
-  forc(I,4) = Rh;
+ if ~(max(abs(squeeze(Rh)    - forc(I,5)))<1e-6);
+  [v,i] = max(abs(squeeze(Rh) - forc(I,5)));
+  fprintf('\n   Rh(%d,%f,%f) ...',i,Rh(i),forc(I(i),5));
+  forc(I,5) = Rh;
  end
- if ~(max(abs(squeeze(PP)    - forc(I,5)./1800))<1e-6);
-  fprintf('\n   PP(%f,%f) ...',max(squeeze(PP) - forc(I,5)./1800),min(squeeze(PP) - forc(I,5)./1800));
-  forc(I,5) = PP*1800;
+ if ~(max(abs(squeeze(PP)    - forc(I,6)./1800))<1e-6);
+  [v,i] = max(abs(squeeze(PP) - forc(I,6)./1800));
+  fprintf('\n   PP(%d,%f,%f) ...',i,PP(i),forc(I(i),6));
+  forc(I,6) = PP*1800;
  end
 
 % % check file length

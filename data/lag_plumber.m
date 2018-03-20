@@ -54,7 +54,7 @@ Louts = Ltimes+Ldays+Lmonths;           % total number of lagged outputs
 % data dimensions
 data = load('pals_data/extracted/Amplero.txt');
 [Tmax,D] = size(data);
-Dx = 5; Dy = 5;
+Dx = 6; Dy = 5;
 assert(D == Dx+Dy+3);
 
 %% *** Gather Data *******************************************************
