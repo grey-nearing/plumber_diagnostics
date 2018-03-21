@@ -1,0 +1,86 @@
+netcdf KrugerFluxnet.1.4_flux {
+dimensions:
+	x = 1 ;
+	y = 1 ;
+	time = UNLIMITED ; // (35040 currently)
+variables:
+	double x(x) ;
+		x:units = "" ;
+	double y(y) ;
+		y:units = "" ;
+	float latitude(y, x) ;
+		latitude:units = "degrees_north" ;
+		latitude:missing_value = -9999.f ;
+		latitude:long_name = "Latitude" ;
+	float longitude(y, x) ;
+		longitude:units = "degrees_east" ;
+		longitude:missing_value = -9999.f ;
+		longitude:long_name = "Longitude" ;
+	double time(time) ;
+		time:units = "seconds since 2002-01-01 00:30:00" ;
+	float Qle(time, y, x) ;
+		Qle:units = "W/m^2" ;
+		Qle:missing_value = -9999.f ;
+		Qle:long_name = "Latent heat flux from surface" ;
+		Qle:CF_name = "surface_upward_latent_heat_flux" ;
+	float Qh(time, y, x) ;
+		Qh:units = "W/m^2" ;
+		Qh:missing_value = -9999.f ;
+		Qh:long_name = "Sensible heat flux from surface" ;
+		Qh:CF_name = "surface_upward_sensible_heat_flux" ;
+	float NEE(time, y, x) ;
+		NEE:units = "umol/m^2/s" ;
+		NEE:missing_value = -9999.f ;
+		NEE:long_name = "Net ecosystem exchange of CO2" ;
+		NEE:CF_name = "surface_upward_mole_flux_of_carbon_dioxide **" ;
+		NEE:CFname\*\* = "Note units are different" ;
+	float GPP(time, y, x) ;
+		GPP:units = "umol/m^2/s" ;
+		GPP:missing_value = -9999.f ;
+		GPP:long_name = "Gross primary poductivity of CO2" ;
+	float Qg(time, y, x) ;
+		Qg:units = "W/m^2" ;
+		Qg:missing_value = -9999.f ;
+		Qg:long_name = "Ground heat flux" ;
+	float Qle_qc(time, y, x) ;
+		Qle_qc:units = "-" ;
+		Qle_qc:missing_value = -9999.f ;
+		Qle_qc:long_name = "Qle quality control flag" ;
+		Qle_qc:values = "As fluxdata.org qcOK: 1 - ok, 0 - ??" ;
+	float Qh_qc(time, y, x) ;
+		Qh_qc:units = "-" ;
+		Qh_qc:missing_value = -9999.f ;
+		Qh_qc:long_name = "Qh quality control flag" ;
+		Qh_qc:values = "As fluxdata.org qcOK: 1 - ok, 0 - ??" ;
+	float NEE_qc(time, y, x) ;
+		NEE_qc:units = "-" ;
+		NEE_qc:missing_value = -9999.f ;
+		NEE_qc:long_name = "NEE quality control flag" ;
+		NEE_qc:values = "As fluxdata.org qcOK: 1 - ok, 0 - ??" ;
+	float GPP_qc(time, y, x) ;
+		GPP_qc:units = "-" ;
+		GPP_qc:missing_value = -9999.f ;
+		GPP_qc:long_name = "GPP quality control flag" ;
+		GPP_qc:values = "As fluxdata.org qcOK: 1 - ok, 0 - ??" ;
+	float Qg_qc(time, y, x) ;
+		Qg_qc:units = "-" ;
+		Qg_qc:missing_value = -9999.f ;
+		Qg_qc:long_name = "Qg quality control flag" ;
+		Qg_qc:values = "As fluxdata.org qcOK: 1 - ok, 0 - ??" ;
+	float elevation(y, x) ;
+		elevation:units = "m" ;
+		elevation:missing_value = -9999.f ;
+		elevation:long_name = "Site elevation above sea level" ;
+	float reference_height(y, x) ;
+		reference_height:units = "m" ;
+		reference_height:missing_value = -9999.f ;
+		reference_height:long_name = "Measurement height on flux tower" ;
+
+// global attributes:
+		:Production_time = "2012-09-27 12:12:34" ;
+		:Production_source = "PALS automated netcdf conversion" ;
+		:PALS_fluxtower_template_version = "1.0.2" ;
+		:PALS_dataset_name = "KrugerFluxnet" ;
+		:PALS_dataset_version = "1.4" ;
+		:Contact = "palshelp@gmail.com" ;
+}
