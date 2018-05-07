@@ -1,12 +1,11 @@
-%clear all
-%close all
-%clc
-%iType = 1;
-%iTarg = 1;
-%iBoot = 1;
-%iSite = 1;
+clear all; close all; clc
 
-function benchmark_bootstrap(iType,iTarg,iSite,iBoot)
+iType = 3;
+iTarg = 1;
+iBoot = 1;
+iSite = 1;
+
+% function benchmark_bootstrap(iType,iTarg,iSite,iBoot)
 
 % master routines
 addpath('../matlab_tools');
@@ -28,7 +27,7 @@ trnfctn = 'trainscg';
 %trnfctn = 'trainbr';
 
 % type names
-typeNames = [{'all'}];%,{'dry'},{'wet'}];
+typeNames = [{'all'},{'dry'},{'wet'}];%
 
 % target names
 targNames = [{'Qe'},{'Qh'},{'NEE'}];
@@ -37,42 +36,42 @@ Ntargs = length(targs);
 
 % site names
 siteNames = [{'Amplero'},{'Blodgett'},{'Bugac'   },{'ElSaler2'},{'ElSaler' },...
-             {'Espirra'},{'FortPeck'},{'Harvard' },{'Hesse'   },{'Howlandm'},...
-             {'Howard' },{'Hyytiala'},{'Kruger'  },{'Loobos'  },{'Merbleue'},...
-             {'Mopane' },{'Palang'  },{'Sylvania'},{'Tumba'   },{'UniMich' }];
+    {'Espirra'},{'FortPeck'},{'Harvard' },{'Hesse'   },{'Howlandm'},...
+    {'Howard' },{'Hyytiala'},{'Kruger'  },{'Loobos'  },{'Merbleue'},...
+    {'Mopane' },{'Palang'  },{'Sylvania'},{'Tumba'   },{'UniMich' }];
 Nsites = length(siteNames);
 
 % load training/test data from all sites
-fprintf('Loading data: Type = %s - Site =  ',typeNames{iType}); loadTime = tic; % screen report
+fprintf('Loading data: Type = %s - Site =  ',typeNames{iType}); loadTime = tic; 
 for s = 1:Nsites
- fprintf('%d, ',s);
-
- fname = strcat('../data/lagged_data/',typeNames{iType},'_',siteNames{s},'.mat');
- load(fname);
-
- Ndat = size(data.date,1);
- if iType==3; Nuse = Ndat; 
- else Nuse = floor(Dmax/Nsites); end
-
- Idx{s} = randperm(Ndat,Nuse);
-
- if (iSite > 1 && s == 1) || (iSite == 1 && s == 2)
-  date = data.date(Idx{s},:);
-  forc = data.forc(Idx{s},:,:);
-  prog = data.flux(Idx{s},:);
- elseif iSite ~= s
-  date = cat(1,date,data.date(Idx{s},:));
-  forc = cat(1,forc,data.forc(Idx{s},:,:));
-  prog = cat(1,prog,data.flux(Idx{s},:));
- elseif iSite == s
-  sdate = data.date;
-  sforc = data.forc;
-  sprog = data.flux;
- else
-  error('check the site loading routine');
- end
-
-end
+    fprintf('%d, ',s);
+    
+    fname = strcat('../data/lagged_data/',typeNames{iType},'_',siteNames{s},'.mat');
+    load(fname);
+    
+    Ndat = size(data.date,1);
+    if iType==3; Nuse = Ndat;
+    else Nuse = floor(Dmax/Nsites); end
+    
+    Idx{s} = randperm(Ndat,Nuse);
+    
+    if (iSite > 1 && s == 1) || (iSite == 1 && s == 2)
+        date = data.date(Idx{s},:);
+        forc = data.forc(Idx{s},:,:);
+        prog = data.flux(Idx{s},:);
+    elseif iSite ~= s
+        date = cat(1,date,data.date(Idx{s},:));
+        forc = cat(1,forc,data.forc(Idx{s},:,:));
+        prog = cat(1,prog,data.flux(Idx{s},:));
+    elseif iSite == s
+        sdate = data.date;
+        sforc = data.forc;
+        sprog = data.flux;
+    else
+        error('check the site loading routine');
+    end
+    
+end; fprintf('/n');
 
 % make sure forcings are not missing
 assert(isempty(find(isnan(forc(:)))));
@@ -148,7 +147,7 @@ t = toc(saveTime); fprintf('finished saving site results: t = %f \n',t);
 %% **** End Experiment ****************************************
 
 % report total time
-t = toc(masterTime); fprintf('\nAll Finished - time = %f ',t); 
+t = toc(masterTime); fprintf('\nAll Finished - time = %f ',t);
 fprintf('\n\n\n----------------------------------------------------\n\n\n');
 
 % report that this matlab job is finished
