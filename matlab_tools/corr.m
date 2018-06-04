@@ -1,4 +1,4 @@
-function c = corr(X,Y);
+function c = corr(X,Y)
 
 [N,D] = size(X);
 assert(N == size(Y,1));

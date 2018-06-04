@@ -1,5 +1,13 @@
 function [Ixy,Hx,Hy] = mutual_info(X,Y,Bx,By)
 
+X = X(:);
+Y = Y(:);
+
+% remove missing values
+Im = find(any(isnan([X,Y]),2));
+X(Im) = [];
+Y(Im) = [];
+
 N = length(X);
 assert(N==length(Y))
 
@@ -11,9 +19,9 @@ for n = 1:N
   x = X(n);
   y = Y(n);
   y = find(y<=By,1,'first');
-%  if isempty(y); keyboard; end
+ if isempty(y); keyboard; end
   x = find(x<=Bx,1,'first');
-%  if isempty(x); keyboard; end
+ if isempty(x); keyboard; end
   Pxy(x,y) = Pxy(x,y) + 1;
 end
 Pxy = Pxy/N;
