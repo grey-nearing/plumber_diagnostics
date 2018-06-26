@@ -46,36 +46,36 @@ Nmodels = length(modelNames);
 
 %% *** Load Data **********************************************************
 
-% % screen report
-% fprintf('Loading Data ... \n'); tic;
-% fprintf(repmat('.',[1,Nsites]));
-% fprintf('\n');
-% 
-% % loop sites
-% for s = 1:Nsites
-%     fprintf('.');
-%     
-%     % load pals data
-%     fname = strcat('../data/pals_data/extracted/',sites{s},'.txt');
-%     pals(:,:,s) = load(fname);
-%     
-%     % load  data
-%     fname = strcat('../data/model_data/extracted/',sites{s},'.mat');
-%     data = load(fname);
-%     model(:,:,:,s) = data.model;
-%     
-% end % sites
-% 
-% % screen report
-% fprintf(' finished; time = %f \n',toc);
-% 
+% screen report
+fprintf('Loading Data ... \n'); tic;
+fprintf(repmat('.',[1,Nsites]));
+fprintf('\n');
+
+% loop sites
+for s = 1:Nsites
+    fprintf('.');
+    
+    % load pals data
+    fname = strcat('../data/pals_data/extracted/',sites{s},'.txt');
+    pals(:,:,s) = load(fname);
+    
+    % load  data
+    fname = strcat('../data/model_data/extracted/',sites{s},'.mat');
+    data = load(fname);
+    model(:,:,:,s) = data.model;
+    
+end % sites
+
+% screen report
+fprintf(' finished; time = %f \n',toc);
+
 % all_data.pals = pals;
 % all_data.model = model;
 % save('all_data.mat','all_data','-v7.3');
-
-load('all_data.mat');
-pals = all_data.pals;
-model = all_data.model;
+% 
+% load('all_data.mat');
+% pals = all_data.pals;
+% model = all_data.model;
 
 %% *** Calculate Indices **************************************************
 

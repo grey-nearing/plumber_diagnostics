@@ -1,3 +1,0 @@
-sh run_convergence_bootstrap.sh 3 1 
-sh run_convergence_bootstrap.sh 3 2 
-sh run_convergence_bootstrap.sh 3 3 
