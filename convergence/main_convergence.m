@@ -276,7 +276,7 @@ for y = 1:Ny
     % labels
     leg = legend(h(:),legLabel(:),'location','best');
     xlabel('Sample Size','fontsize',20);
-    ylabel('Mutual Information Ratio','fontsize',20);
+    ylabel('Correlation Coefficient','fontsize',20);
     title(strcat('Correlation Coefficient'),'fontsize',22);
     
     % aesthetics
