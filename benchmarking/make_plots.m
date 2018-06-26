@@ -8,8 +8,6 @@ close all
 
 %% *** Initialize Plotting Tools ******************************************
 
-
-
 % model colors
 figure(1);close(1);figure(1);
 cc = plot(randn(7));
@@ -161,7 +159,7 @@ set(gca,'fontsize',22);
 grid on
 
 % labels
-ylabel(statNames{s},'fontsize',24);
+ylabel('Norm. Mutual Info','fontsize',24);
 set(gca,'xticklabel',targNames);
 leg = legend([{'Local Benchmark'};{'Global Benchmark'};modelNames],'location','se');
 leg.FontSize = 9;

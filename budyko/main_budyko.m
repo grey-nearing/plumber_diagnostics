@@ -137,7 +137,7 @@ fprintf(' finished; time = %f \n',toc);
 %% *** Perform Regression *************************************************
 
 % screen report
-fprintf('Training Regressionbs ... \n'); tic;
+fprintf('Training Regressions ... \n'); tic;
 fprintf(repmat('.',[1,Nsites]));
 fprintf('\n');
 
@@ -232,11 +232,23 @@ for b = 1:Nboot
         RMSE.model(m,b) = rmse(efm(I(S)),EF(I(S))');
     end
     
+    % calculte MAEs
+    MAE.TP(b) = mae(TP(I(S))',EF(I(S))');
+    MAE.LR(b) = mae(LR(I(S))',EF(I(S))');
+    for m = 1:Nmodels
+        efm = squeeze(EFm(:,m));
+        MAE.model(m,b) = mae(efm(I(S)),EF(I(S))');
+    end
+    
 end % Nboot
 
 RMSEs = cat(1,[RMSE.TP;RMSE.LR],RMSE.model(1:end,:));
 [~,rank] = sort(mean(RMSEs'));
 RMSEs = RMSEs(rank,:);
+
+MAEs = cat(1,[MAE.TP;MAE.LR],MAE.model(1:end,:));
+[~,rank] = sort(mean(MAEs'));
+MAEs = MAEs(rank,:);
 
 %% *** Plot Budyko Curve **************************************************
 
@@ -282,24 +294,26 @@ saveas(gcf,'figures/BudykoCurve.png');
 
 %% *** Plot RMSE Statistics ***********************************************
 
-xnames = [{'Turc-Pike'};{'EF Regression'};modelNames(1:end)];
+xnames = [{'Turc-Pike'};{'Benchmark Reg.'};modelNames(1:end)];
 
 iFig = iFig+1; figure(iFig); close(iFig); figure(iFig);
 set(gcf,'color','w','position',[440   324   624   474])
 
-boxplot(RMSEs');
+% boxplot(RMSEs');
+boxplot(MAEs');
 set(gca,'xticklabel',xnames(rank));
 h = gca;
 h.XTickLabelRotation = 60;
 grid on;
-ylabel('RMSE of Evap. Frac.','fontsize',20);
+% ylabel('RMSE of Evap. Frac.','fontsize',20);
+ylabel('MAE of Evap. Frac.','fontsize',20);
 set(gca,'ylim',[0,0.5]);
 set(gca,'fontsize',16)
 
 % save MAE figure
 figure(iFig);
 set(gcf,'PaperPositionMode','auto')
-saveas(gcf,'figures/Figure 3 - BudykoRMSE.png');
+saveas(gcf,'figures/Figure 3 - BudykoMAE.png');
 
 %% *** End Program ********************************************************
 

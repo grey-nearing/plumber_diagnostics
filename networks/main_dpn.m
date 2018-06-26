@@ -15,9 +15,9 @@ modelNames = [ ...
     {'JULES.3.1'}
     {'JULES3.1_altP'}
     {'Mosaic.1'}
-    {'NOAH.2.7.1'}
+    {'Noah.2.7.1'}
     {'Noah.3.2'}
-    {'NOAH.3.3'}
+    {'Noah.3.3'}
     {'Manabe_Bucket.2 '}
     {'Penman_Monteith.1'}];
 
@@ -259,6 +259,16 @@ for s = 1:Ns
     save(fname);
     
 end % s-loop
+
+%% *** Save Results *******************************************************
+   
+% save progress
+outdata.Tm = Tm;
+outdata.Tp = Tp;
+outdata.Hm = Hm;
+outdata.Hp = Hp;
+fname = strcat('results/dpn_stats.mat');
+save(fname,'outdata');
 
 %% *** END PROGRAM ********************************************************
 

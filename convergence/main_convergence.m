@@ -23,12 +23,11 @@ Ns = length(siteNames);
 Nt = 3e4;
 
 % sample sizes
-% fracs = logspace(-3,-2,4);
-fracs = logspace(-3,log10(0.8),20);
+fracs = logspace(-3,log10(0.25),20);
 Nf = length(fracs);
 
 % bootstraps
-Nb = 5;
+Nb = 10;
 
 % number of mutual info bins
 Nbins = 100;
@@ -36,7 +35,7 @@ Nbins = 100;
 % ann training parameters
 trainParms.verbose       = 0;
 trainParms.nodes         = 20;
-trainParms.trainRatio    = 0.65;
+trainParms.trainRatio    = 0.75;
 trainParms.max_fail      = 10;
 trainParms.epochs        = 1e3;
 trainParms.trainFcn      = 'trainscg';
@@ -50,27 +49,14 @@ load(fname);
 data.flux = data.flux(:,1:3);
 data.forc = data.forc(:,:,:);
 
-% load models data
-fname = strcat('../data/lagged_data/lagged_models_',siteNames{1},'.mat');
-load(fname);
-model = model(:,10:12,:);
-
 % dimensions
 [~,Nx,Nl] = size(data.forc);
 Ny = size(data.flux,2);
 Nd = size(data.date,2);
-Nm = size(model,3);
-
-% init storage
-Iwet = zeros(Nt,Ns)/0;
-Idry = zeros(Nt,Ns)/0;
-Nwet = zeros(Ns,1)/0;
-Ndry = zeros(Ns,1)/0;
 
 date = zeros(Nt,3,Ns);
 forc = zeros(Nt,Nx,Nl,Ns);
 flux = zeros(Nt,Ny,Ns);
-modl = zeros(Nt,Ny,Nm,Ns);
 
 % screen report
 fprintf('Loading Data ... \n'); tic;
@@ -82,18 +68,13 @@ for s = 1:Ns
     fprintf('.');
     
     % load fluxnet data
-    fname = strcat('../data/lagged_data/lagged_fluxnet_',siteNames{s},'.mat');
+    fname = strcat('../data/lagged_data/lagged_fluxnet_',...
+        siteNames{s},'.mat');
     load(fname);
     data.flux = data.flux(:,1:3);
     data.forc = data.forc(:,:,:);
     
-    % load models data
-    fname = strcat('../data/lagged_data/lagged_models_',siteNames{s},'.mat');
-    load(fname);
-    model = model(:,10:12,:);
-    
     % check dimensions
-    assert(length(model) == length(data.date));
     assert(Nt <= length(data.date));
     
     % take random sample
@@ -103,7 +84,6 @@ for s = 1:Ns
     date(:,:,s)   = data.date(Idex,:);
     forc(:,:,:,s) = data.forc(Idex,:,:);
     flux(:,:,s)   = data.flux(Idex,:);
-    modl(:,:,:,s) = model(Idex,:,:);
     
 end % s-loop
 
@@ -130,7 +110,6 @@ end
 % collapse lagged dimension
 Xsite = zeros(Nt,Nx*Nl+1,Ns   )/0;
 Ysite = zeros(Nt,Ny     ,Ns   )/0;
-Msite = zeros(Nt,Ny     ,Ns,Nm)/0;
 for s = 1:Ns
     
     % regressors
@@ -141,9 +120,6 @@ for s = 1:Ns
     
     % regressands
     Ysite(:,:,s) = flux(:,:,s);
-    
-    % predictions
-    Msite(:,:,s,:) = modl(:,:,:,s);
     
 end
 
@@ -163,6 +139,10 @@ Xall = reshape(permute(Xsite,[1,3,2]),[Nt*Ns,Nx*Nl+1]);
 
 % init sorage - predictions
 Zall = zeros(Nt*Ns,Ny,Nf,Nb)./0;
+
+% % save progress
+% fname = './results/progress_convergence.mat';
+% load(fname);
 
 for y = 1:Ny            % loop through output dimensions
     for f = 1:Nf        % loop through data fractions
@@ -187,69 +167,123 @@ for y = 1:Ny            % loop through output dimensions
             assert(isempty(find(isnan(Ytst(:)),1)));
             
             % screen report
-            fprintf('Training ANN: Target = %s - Fraction = %d/%d - Boot = %d/%d - Ndata = %d ...',...
+            fprintf('Training %s ANN: Frac = %d/%d - Boot = %d/%d - Ndata = %d ...',...
                 targNames{y},f,Nf,b,Nb,round(Nt*Ns*fracs(f))); tic;
             
             % train the network on segregated data
             ann{y,f,b} = trainANN(Xtrn,Ytrn,trainParms);
             
             % predict on segregated data
-            Zall(:,y,f,b) = ann{y,f}(Xall');
+            Zall(:,y,f,b) = ann{y,f,b}(Xall');
             Ztst = Zall(Itst,y,f,b);
             Ztrn = Zall(Itrn,y,f,b);
             
             % calculate ann-all stats
-            temp = calcStats(Ytst,Ztst,Bw); tstStats(y,f,b) = temp.mi;
-            temp = calcStats(Ytrn,Ztrn,Bw); trnStats(y,f,b) = temp.mi;
+            tstStats = calcStats(Ytst,Ztst,Bw); 
+            tstMI(y,f,b) = tstStats.mi;
+            tstRMSE(y,f,b) = tstStats.rmse;
+            tstCORR(y,f,b) = tstStats.r;
+            
+            trnStats = calcStats(Ytrn,Ztrn,Bw); 
+            trnMI(y,f,b) = trnStats.mi;
+            trnRMSE(y,f,b) = trnStats.rmse;
+            trnCORR(y,f,b) = trnStats.r;
             
             % screen report
-            fprintf('. finished; time = %f \n',toc);
+            fprintf('. time = %f \n',toc);
             
             % screen report
-            fprintf('Training MI = %f\n',trnStats(y,f,b));
-            fprintf('Test MI = %f \n\n',tstStats(y,f,b));
+            fprintf('Training MI = %f\n',trnMI(y,f,b));
+            fprintf('Test MI = %f \n\n',tstMI(y,f,b));
             
         end % b-loop
+        
+        % save progress
+        fname = './results/progress_convergence.mat';
+        save(fname,'-v7.3');
+         
     end % f-loop
-    
-    % save progress
-    fname = './results/progress_convergence.mat';
-    save(fname,'-v7.3');
-    
 end % y-loop
 
 %% *** Make Plots *********************************************************
    
+close all
+
 % set up figure
 iFig = iFig + 1;
 figure(iFig); close(iFig); figure(iFig);
 set(gcf,'color','w');
+set(gcf,'position',[1925         403        1316         644]);
+
+% plotting data: Y
+Mtrn.mi = squeeze(mean(trnMI   ,3));
+Strn.mi = squeeze(std( trnMI,[],3));
+Mtst.mi = squeeze(mean(tstMI   ,3));
+Stst.mi = squeeze(std( tstMI,[],3));
+
+Mtrn.r2 = squeeze(mean(trnCORR   ,3));
+Strn.r2 = squeeze(std( trnCORR,[],3));
+Mtst.r2 = squeeze(mean(tstCORR   ,3));
+Stst.r2 = squeeze(std( tstCORR,[],3));
+
+Mtrn.se = squeeze(mean(trnRMSE   ,3));
+Strn.se = squeeze(std( trnRMSE,[],3));
+Mtst.se = squeeze(mean(tstRMSE   ,3));
+Stst.se = squeeze(std( tstRMSE,[],3));
 
 % plotting data: X
 X = round(Nt*Ns*fracs);
-Mtrn = squeeze(mean(trnStats   ,3));
-Strn = squeeze(std( trnStats,[],3));
-Mtst = squeeze(mean(tstStats   ,3));
-Stst = squeeze(std( tstStats,[],3));
- 
+X = X(1:size(Mtrn.mi,2));
+
 % plot data
 clear h legLabel
 for y = 1:Ny
-    h(1,y) = plot(X,Mtrn(y,:),'-o' ,'linewidth',2,'markersize',8,'color',colors(2*y,:)); hold on;
-    h(2,y) = plot(X,Mtst(y,:),'--s','linewidth',2,'markersize',8,'color',colors(2*y,:)); hold on;
-    legLabel(1,y) = strcat(targNames{y},{' - Training'});
-    legLabel(2,y) = strcat(targNames{y},{' - Test'});
+    
+    subplot(2,Ny,y)
+    
+    % plot mi stats
+    h(1) = semilogx(X,Mtrn.mi(y,:),'-o' ,'linewidth',2,...
+        'markersize',8,'color',colors(2*y,:)); hold on;
+    h(2) = semilogx(X,Mtst.mi(y,:),'--s','linewidth',2,...
+        'markersize',8,'color',colors(2*y,:)); hold on;
+    errorbar(X,Mtrn.mi(y,:),2*Strn.mi(y,:),'color',colors(2*y,:))
+    errorbar(X,Mtst.mi(y,:),2*Stst.mi(y,:),'color',colors(2*y,:))
+    legLabel(1) = strcat(targNames{y},{' - Training'});
+    legLabel(2) = strcat(targNames{y},{' - Test'});
+       
+    % labels
+    leg = legend(h(:),legLabel(:),'location','best');
+    xlabel('Sample Size','fontsize',20);
+    ylabel('Mutual Information Ratio','fontsize',20);
+    title(strcat('Mutual Information Metric'),'fontsize',22);
+    
+    % aesthetics
+    set(gca,'fontsize',16);
+    grid on;
+    
+    subplot(2,Ny,Ny+y)
+    
+    % plot corr stats
+    h(3) = plot(X,Mtrn.r2(y,:),'-o' ,'linewidth',2,...
+        'markersize',8,'color',colors(2*y,:)); hold on;
+    h(4) = plot(X,Mtst.r2(y,:),'--s','linewidth',2,...
+        'markersize',8,'color',colors(2*y,:)); hold on;
+    errorbar(X,Mtrn.r2(y,:),2*Strn.r2(y,:),'color',colors(2*y,:))
+    errorbar(X,Mtst.r2(y,:),2*Stst.r2(y,:),'color',colors(2*y,:))
+    legLabel(1) = strcat(targNames{y},{' - Training'});
+    legLabel(2) = strcat(targNames{y},{' - Test'});
+    
+    % labels
+    leg = legend(h(:),legLabel(:),'location','best');
+    xlabel('Sample Size','fontsize',20);
+    ylabel('Mutual Information Ratio','fontsize',20);
+    title(strcat('Correlation Coefficient'),'fontsize',22);
+    
+    % aesthetics
+    set(gca,'fontsize',16);
+    grid on;
+    
 end % y-loop
-
-% labels
-leg = legend(h(:),legLabel(:),'location','ne');
-xlabel('Sample Size','fontsize',20);
-ylabel('Mutual Information Ratio','fontsize',20);
-title(strcat('Convergence by Sample Size'),'fontsize',22);
-
-% aesthetics
-set(gca,'fontsize',16);
-grid on;
 
 % save figure
 figure(iFig);
@@ -263,6 +297,12 @@ fname = './results/progress_convergence.mat';
 save(fname,'-v7.3');
 
 % save final statistics only
+stats.tstStats.mi = tstMI;
+stats.trnStats.mi = trnMI;
+stats.tstStats.r2 = tstCORR;
+stats.trnStats.r2 = trnCORR;
+stats.tstStats.se = tstRMSE;
+stats.trnStats.se = trnRMSE;
 fname = './results/stats_convergence.mat';
 save(fname,'stats','-v7.3');
 

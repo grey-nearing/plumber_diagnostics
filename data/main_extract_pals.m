@@ -58,6 +58,9 @@ for s = 1:Nsites
     date = zeros(Tmax,3)./0;
     prog = zeros(Tmax,5)./0;
     forc = zeros(Tmax,6)./0;
+
+    progfqc = zeros(Tmax,5)./0;
+    forcfqc = zeros(Tmax,6)./0;
     
     % read spreadsheet for the rest of obs
     edex = 0;  % index looper
@@ -102,12 +105,23 @@ for s = 1:Nsites
         prog(dex,4) = data(:,16); % SM1
         prog(dex,5) = data(:,17); % SM2
         
+        progfqc(dex,1) = data(:,47);  % Qe
+        progfqc(dex,2) = data(:,48);  % Qh
+        progfqc(dex,3) = data(:,46);  % NEE
+        progfqc(dex,4) = data(:,55); % SM1
+        progfqc(dex,5) = data(:,56); % SM2
+        
         forc(dex,1) = data(:,18); % Uu
         forc(dex,2) = data(:,11); % Ta
         forc(dex,3) = data(:,31); % Sw
         forc(dex,4) = data(:,29); % Lw
         forc(dex,5) = data(:,36); % Rh
         forc(dex,6) = data(:,15); % Pp
+        
+        forcfqc(dex,1) = data(:,57); % Uu
+        forcfqc(dex,2) = data(:,50); % Ta
+        forcfqc(dex,5) = data(:,53); % Rh
+        forcfqc(dex,6) = data(:,54); % Pp
         
     end % year
     
@@ -210,6 +224,11 @@ for s = 1:Nsites
     % write total data file
     outdata = [date,forc,prog];
     fname = strcat('pals_data/extracted/',siteNames{s},'.txt');
+    save(fname,'outdata','-ascii')
+    
+    % write quality control data file
+    outdata = [date,forcfqc,progfqc];
+    fname = strcat('pals_data/extracted/',siteNames{s},'_fqc.txt');
     save(fname,'outdata','-ascii')
     
     % screen report
