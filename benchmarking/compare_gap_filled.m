@@ -1,5 +1,6 @@
 clear all; close all; clc
 restoredefaultpath; addpath('../matlab_tools');
+iFig = 0;
 
 %% *** Experiment Setup ***************************************************
 
@@ -20,10 +21,6 @@ load(fname);
 nonStats = stats; 
 clear stats
 
-% count stats
-fn = fieldnames(gapStats(y).all.ann);
-Nstats = length(fn);
-
 %% *** Make Plots *********************************************************
 
 % set up figure
@@ -36,14 +33,14 @@ set(gcf,'color','w');
 for y = 1:length(targNames)
     vals(y,1) = gapStats(y).all.ann.mi;
     vals(y,2) = nonStats(y).all.ann.mi;
-    vals(y) = (gapStats(y).all.ann.mi - nonStats(y).all.ann.mi) ./ nonStats(y).all.ann.mi;    
+    vals(y,3) = (gapStats(y).all.ann.mi - nonStats(y).all.ann.mi) ./ nonStats(y).all.ann.mi;    
 end % y-loop
 
 % plot stuff
-bar(vals)
+bar(vals')
 
 % aesthetics
-set(gca,'yticklabels',[{'gap-filled'},{'non-filled'},{'diff. ratio'}])
+set(gca,'xticklabels',[{'gap-filled'},{'non-filled'},{'diff. ratio'}])
 legend(targNames);
 
 % save figure
